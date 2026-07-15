@@ -1,0 +1,407 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #FAFAF8;
+  --fg: #10130f;
+
+  /* "Ink + Evergreen" design tokens — brand guidelines §1.8.
+     Wired up now; sections adopt them in later rollout steps. */
+  /* brand green */
+  --green-900: #07140f;
+  --green-800: #0f2a20;
+  --green-700: #14342b;
+  --green-600: #1a5a40;
+  --green-500: #1f6b4c;
+  --green-400: #2e8b63;
+  --green-300: #5e9e80;
+  --green-200: #bfd8cc;
+  --green-50: #eaf3ee;
+  /* ink + line */
+  --ink-900: #0e1311;
+  --ink-700: #2a302d;
+  --ink-500: #5b635f;
+  --ink-300: #9aa09c;
+  --line: #e2e6e2;
+  /* light surfaces */
+  --surface: #fafaf8;
+  --paper: #ffffff;
+  --sunken: #f2f4f2;
+  /* dark surfaces */
+  --d-bg: #07140f;
+  --d-panel: #0f2a20;
+  --d-panel-2: #14342b;
+  --d-border: rgba(255, 255, 255, 0.08);
+  --d-text-hi: #f3f5f0;
+  --d-text-mid: #a9b5af;
+  --d-text-low: rgba(243, 245, 240, 0.55);
+  /* semantic */
+  --success: #3fb07d;
+  --warning: #c8862f;
+  --danger: #c0563e;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide scrollbar chrome for the full-bleed, editorial feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(16, 19, 15, 0.18);
+}
+
+@layer utilities {
+  .fade-up {
+    animation: fadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   /newhome hero — one orchestrated page-load entrance. Elements start hidden
+   and rise/fade in on a stagger (animation-delay set inline per element). The
+   dashboard rises further + scales, so it appears to push up out of the hills.
+   prefers-reduced-motion shows everything immediately.
+   --------------------------------------------------------------------------- */
+@layer utilities {
+  .nh-anim {
+    opacity: 0;
+    animation: nh-rise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .nh-anim-nav {
+    opacity: 0;
+    animation: nh-drop 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .nh-anim-card {
+    opacity: 0;
+    animation: nh-card 1.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes nh-rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes nh-drop {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes nh-card {
+    from { opacity: 0; transform: translateY(52px) scale(0.985); }
+    to { opacity: 1; transform: none; }
+  }
+  /* Whiten a colored logo tile to the white-on-grass treatment. Kept as a real
+     CSS rule (not an arbitrary `[filter:...]` utility) so the production
+     Tailwind build can never purge it — a dropped filter is what makes the
+     dark source art read as "black logos" on a built page. `forced-color-adjust`
+     stops OS forced-colors / smart-invert modes from flipping the white back. */
+  .logo-white {
+    filter: brightness(0) invert(1);
+    forced-color-adjust: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nh-anim,
+  .nh-anim-nav,
+  .nh-anim-card {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   BrandOrbitSection — slow logo orbit (desktop) + marquee (mobile).
+   Pure CSS, no animation libraries. Each ring rotates; each logo counter-
+   rotates at the same duration so it stays upright. prefers-reduced-motion
+   stops all motion and the mobile marquee falls back to a static wrapped grid.
+   --------------------------------------------------------------------------- */
+/* Full orbit: each ring spins a continuous 360°; every logo counter-rotates at
+   the same duration so it stays upright as it travels. A bottom mask on the
+   static wrapper (see component) fades logos out as they cross the headline
+   line, so they appear to emerge from — and vanish into — nowhere. */
+@keyframes bo-orbit-cw {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes bo-orbit-ccw {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes bo-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* two rings orbit in OPPOSITE directions at different speeds (the original
+   feel, ~40% calmer); each ring's logos counter-rotate at the matching
+   duration to stay upright */
+.bo-ring-inner {
+  animation: bo-orbit-cw 100s linear infinite;
+}
+.bo-counter-inner {
+  animation: bo-orbit-ccw 100s linear infinite;
+}
+.bo-ring-outer {
+  animation: bo-orbit-ccw 140s linear infinite;
+}
+.bo-counter-outer {
+  animation: bo-orbit-cw 140s linear infinite;
+}
+.bo-marquee-track {
+  animation: bo-marquee 45s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-ring-inner,
+  .bo-counter-inner,
+  .bo-ring-outer,
+  .bo-counter-outer,
+  .bo-marquee-track {
+    animation: none !important;
+  }
+  /* mobile: become a static, centered wrapped grid instead of a scroll row */
+  .bo-marquee-track {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100% !important;
+  }
+  .bo-marquee-dup {
+    display: none;
+  }
+}
+
+/* Hero scaling knobs. Defaults = the reference layout. These MUST live in the
+   stylesheet (not inline on the element) so the media queries below can override
+   them — inline styles win on specificity and would disable every override. */
+.hero-root {
+  --u: min(1vw, 1.5354svh); /* base unit — all content scales off this */
+  --dash-w: 63.71; /* dashboard width */
+  --dash-top: 28; /* dashboard top offset (nudged down for more headroom under the headline) */
+  --logo-mw: 50.97; /* logo row max-width */
+  --logo-h: 1.14; /* logo image height */
+  --logo-txt: 0.68; /* "Trusted by" caption size */
+  --logo-b: 3.64; /* logo row bottom offset (distance up from viewport bottom) */
+}
+
+/* Large monitors (>=1600px wide): the hill height is now locked to the viewport
+   height (42svh, see HomeHero), so it no longer balloons on wide screens. Here
+   we only enlarge the dashboard + logos a touch for readability on big panels.
+   Below 1600px these vars keep their reference defaults. */
+@media (min-width: 1600px) {
+  .hero-root {
+    --dash-w: 68; /* 63.71 → wider dashboard */
+    --dash-top: 25; /* 22 → nudged down for more headroom under the headline */
+    --logo-mw: 56; /* 50.97 → wider logo row */
+    --logo-h: 1.4; /* 1.14 → larger logos */
+    --logo-txt: 0.82; /* 0.68 → larger caption */
+    /* Measured: the upper hill is bright sky/haze and the mid-hill has a sunlit
+       peak that washes out the white logos. The dark, uniform band is lower on
+       the hill — so on big screens drop the logo row down into it. */
+    --logo-b: 1.9; /* 3.64 → pushed down onto the dark lower hill */
+  }
+}
+
+/* Portrait / vertical monitors (taller than wide): the content unit is
+   width-driven here, so the dashboard would float high and leave a sky gap
+   above the hill. Drop the dashboard down so its base tucks into the hill ridge
+   (~the top of the 42svh band) and widen it for presence. Logos stay bottom-
+   anchored on the hill, so they're unaffected. */
+@media (max-aspect-ratio: 1/1) {
+  .hero-root {
+    --dash-w: 88; /* fill most of the narrow width for presence */
+    --dash-top: 52; /* 25.03 → pushed down so its base tucks into the hill */
+  }
+}
+
+/* ============================================================
+   Platform section (spec: platform-section-build-prompt-v2.md)
+   Tokens scoped to .platform — NOT :root — so the olive/dark
+   palette can't leak into the rest of the site.
+   ============================================================ */
+.platform {
+  /* surfaces — left visual stays dark ("Ink + Evergreen" dark family, §1.4) so
+     the white ball/rings read; the right content panel re-points these tokens
+     to the light/ink family in `.platform .content`. */
+  --bg-dark: var(--d-bg);
+  /* text — dark-family defaults (used by the left visual); the content panel
+     overrides them to ink */
+  --text-hi: var(--d-text-hi);
+  --text-sage: var(--d-text-mid);
+  --text-soft: var(--d-text-mid);
+  /* graphics */
+  --ball: #ffffff;
+  --ring: rgba(255, 255, 255, 0.55);
+  --rule: rgba(255, 255, 255, 0.45);
+  --btn-border: rgba(243, 242, 234, 0.35);
+  /* type + rhythm — spec stack replaced with Satoshi (site is migrating to it) */
+  --font: var(--font-satoshi), "Inter", system-ui, sans-serif;
+  --pad: clamp(32px, 5vw, 88px);
+
+  /* Outer wrapper: transparent, full-viewport, centers the framed card so the
+     page's light background stays visible around it. This element is still the
+     ScrollTrigger pin target — the box holds centered while the scrub plays. */
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: clamp(16px, 3vw, 48px);
+  color: var(--text-hi);
+  font-family: var(--font);
+}
+
+/* The inset framed card: white border, rounded, dark inside */
+.platform__frame {
+  display: flex;
+  width: min(1200px, 100%);
+  /* min-height (not height): grow to fit the real copy instead of clipping it,
+     while keeping the same presence when content is short */
+  min-height: min(82vh, 760px);
+  background: var(--bg-dark);
+  border: 10px solid #ffffff;
+  border-radius: 28px; /* matches the site's card radius */
+  overflow: hidden;
+  box-shadow: 0 24px 70px -30px rgba(16, 19, 15, 0.35);
+}
+
+/* left */
+.platform .visual { position: relative; flex: 1 1 50%; overflow: hidden; }
+.platform .visual__bg {
+  position: absolute; inset: -8% 0; width: 100%; height: 116%;
+  object-fit: cover; filter: grayscale(1) brightness(0.68) contrast(1.05);
+  will-change: transform;
+}
+.platform .visual__shade {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(6, 25, 21, 0.35), rgba(6, 25, 21, 0.75));
+}
+
+.platform .diagram {
+  position: absolute; top: 50%; left: 44%;
+  transform: translate(-50%, -50%); height: 86%;
+}
+.platform .ring { stroke: var(--ring); stroke-width: 1.5; stroke-dasharray: 5 6; }
+.platform .ball { filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.5)); }
+
+.platform .rule {
+  position: absolute; top: 6%; bottom: 6%; right: 9%;
+  width: 1px; background: var(--rule);
+}
+.platform .rule__label {
+  position: absolute; right: -7px; writing-mode: vertical-rl;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--text-sage); white-space: nowrap;
+}
+.platform .rule__label--top { top: 0; }
+.platform .rule__label--bottom { bottom: 0; }
+
+.platform .connector {
+  position: absolute; height: 1px; background: var(--rule);
+  opacity: 0; transform-origin: left center; pointer-events: none;
+}
+
+/* right */
+.platform .content {
+  /* Light "Ink + Evergreen" panel: paper ground, ink text, green for
+     interactive only. Text tokens are re-pointed to the ink family *here* so
+     the left visual (rule labels, connector on the dark photo) keeps the
+     dark-family light text. */
+  flex: 1 1 50%;
+  background: radial-gradient(120% 95% at 35% 38%, var(--paper) 0%, var(--bg) 100%);
+  color: var(--ink-900);
+  --text-hi: var(--ink-900);
+  --text-sage: var(--ink-500);
+  --text-soft: var(--ink-500);
+  --rule: rgba(14, 19, 17, 0.12); /* spine hairline on light */
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 26px; padding: var(--pad);
+}
+.platform .content__title {
+  font-size: clamp(28px, 2.6vw, 38px); font-weight: 500; line-height: 1.15;
+}
+.platform .content__intro {
+  font-size: clamp(18px, 1.5vw, 23px); color: var(--text-sage);
+  line-height: 1.4; max-width: 48ch;
+}
+
+.platform .items {
+  list-style: none; margin: 28px 0 0; padding: 0;
+  position: relative; display: flex; flex-direction: column; gap: 20px;
+}
+/* the bracket spine joining the circles */
+.platform .items::before {
+  content: ""; position: absolute; left: 21px; top: 22px;
+  bottom: 22px; width: 1px; background: var(--rule); opacity: 0.5;
+}
+
+.platform .item {
+  display: grid; grid-template-columns: 44px 1fr; gap: 20px;
+  align-items: start; opacity: 0.4;
+  transition: opacity 0.45s ease;
+}
+.platform .item.is-active { opacity: 1; }
+/* .item__num removed — marker now renders via shared <NumberedMarker> (relative z-10) */
+.platform .item__body h3 { font-size: 15px; font-weight: 600; margin: 8px 0 4px; }
+.platform .item__body p { font-size: 14px; color: var(--text-soft); line-height: 1.45; }
+.platform .arrow { font-size: 13px; margin-left: 2px; color: var(--green-500); }
+
+.platform .btn {
+  align-self: flex-start; margin-top: 14px; padding: 14px 24px;
+  background: var(--green-500); border: 1px solid var(--green-500);
+  border-radius: 999px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #fff; text-decoration: none;
+  transition: background 0.3s, border-color 0.3s;
+}
+.platform .btn:hover { background: var(--green-600); border-color: var(--green-600); }
+
+/* mobile: stacked panels inside the frame, no pin (spec §6) */
+@media (max-width: 1023px) {
+  .platform { min-height: 0; padding: 16px; }
+  .platform__frame { flex-direction: column; height: auto; border-width: 6px; }
+  .platform .visual { flex-basis: 48vh; min-height: 48vh; }
+  .platform .rule { display: none; }
+}
+
+/* §3 DashboardSection — scripted "live" demo loop micro-animations */
+@keyframes dash-rowin { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@keyframes dash-pop   { 0% { transform: scale(1); } 30% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@keyframes dash-caret { 50% { opacity: 0; } }
+.dash-rowin { animation: dash-rowin 0.42s cubic-bezier(0.33, 1, 0.68, 1) both; }
+.dash-pop   { display: inline-block; animation: dash-pop 0.5s ease both; }
+.dash-caret { animation: dash-caret 1s step-end infinite; }
+/* Right-rail automation ring: fills once from empty (--ring-c) to its resting
+   offset. Reduced motion shows the final state with no animation. */
+@keyframes ring-fill { from { stroke-dashoffset: var(--ring-c); } }
+.ring-fill { animation: ring-fill 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .dash-rowin, .dash-pop, .dash-caret, .ring-fill { animation: none; }
+}
+
