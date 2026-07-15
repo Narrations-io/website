@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 120" role="img" aria-label="Narrations">
+  <title>Narrations</title>
+  <defs>
+    <clipPath id="lmi-clipL"><polygon points="26,26 70,26 70,40 40,40 40,94 26,94"/></clipPath>
+    <clipPath id="lmi-clipR"><polygon points="94,94 50,94 50,80 80,80 80,26 94,26"/></clipPath>
+  </defs>
+  <polygon points="26,26 70,26 70,40 40,40 40,94 26,94" fill="#0E1311"/>
+  <polygon points="94,94 50,94 50,80 80,80 80,26 94,26" fill="#0E1311"/>
+  <rect x="23" y="31" width="20" height="4" fill="#FAFAF8" transform="rotate(45 33 33)" clip-path="url(#lmi-clipL)"/>
+  <rect x="77" y="85" width="20" height="4" fill="#FAFAF8" transform="rotate(45 87 87)" clip-path="url(#lmi-clipR)"/>
+  <line x1="44" y1="44" x2="76" y2="76" stroke="#0E1311" stroke-width="4"/>
+  <text x="108" y="86" fill="#0E1311" font-family="Satoshi, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="600" font-size="84" letter-spacing="-1.2">arrations</text>
+</svg>

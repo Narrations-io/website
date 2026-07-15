@@ -1,0 +1,248 @@
+/* ---------------------------------------------------------------------------
+   Technology / "Architecture" section — faithful rebuild of the wonderful.ai
+   isometric scroll-stack (spec: Productpage/compass_artifact_*.md, Route A).
+
+   The "3D" is an illusion: four pre-rendered isometric PNG slabs baked at a
+   2:1 dimetric angle, stacked with absolute positioning. We only animate
+   transform/opacity/filter (compositor-only) + a transform-driven marker.
+   Tokens are scoped to .section so the page's light theme is untouched.
+   --------------------------------------------------------------------------- */
+.section {
+  --accent: #1F6B4C;          /* emerald — matches the slab border (EDGE_COLOR) */
+  --ink: #0E1311;             /* active label text */
+  --muted: #5B635F;           /* inactive label text */
+  --panel: #FAFAF8;           /* section ground */
+  --slab-w: 34rem;            /* locked to the large size; height derives 939/1832 */
+  --slab-ratio: 0.5125;       /* 939 / 1832 */
+  --slab-gap: 0.66;           /* vertical offset between slabs, × slab height
+                                  (matches the composite's exploded spacing) */
+  /* Slabs get a coloured border (an outline tracing each iso silhouette) applied
+     inline per slab in TechnologySection.tsx — the white card face + neutral
+     ground are deliberately left untouched. */
+  font-family: var(--font-satoshi), system-ui, sans-serif;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+/* A normal (un-pinned) full-height section — the stack is click-driven. */
+.stage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(3rem, 6vh, 6rem) clamp(1.5rem, 6vw, 7rem);
+  overflow: hidden;
+}
+
+/* —— Heading —— */
+.head {
+  max-width: 54rem;
+  margin: 0 auto clamp(1.5rem, 3vh, 2.5rem);
+  text-align: center;
+}
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 1.1rem;
+}
+.title {
+  font-size: clamp(1.8rem, 3.6vw, 2.8rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+.subtitle {
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  line-height: 1.4;
+  color: #5B635F;
+  margin: 0;
+}
+
+/* —— Scene: centred iso stack with labels anchored around it —— */
+.scene {
+  position: relative;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  /* tall enough to hold the exploded stack + the corner labels */
+  aspect-ratio: 1.95 / 1;
+}
+
+/* —— Isometric stack (dead-centre of the scene) —— */
+.stack {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--slab-w);
+  /* height is set inline per active state; this is just a pre-hydration fallback */
+  height: calc(var(--slab-w) * var(--slab-ratio) * 2.5);
+  transform: translate(-50%, -50%);
+  /* Synced 1:1 with the slab transform below so the stack re-centres in lockstep
+     with the slabs spreading — desynced durations were the main "rubbery"/slow feel. */
+  transition: height 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+}
+.slab {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: var(--slab-w);
+  height: auto;
+  cursor: pointer;
+  /* full transform (translateX(-50%) + per-state translateY + scale) is set
+     inline; the seam shifts animate here on the compositor */
+  /* filter (coloured border outline + soft shadow) is applied inline per slab in
+     TechnologySection.tsx — see edgeOutline(). We deliberately do NOT transition
+     filter: a will-change:transform layer + a transitioned multi-drop-shadow
+     filter leaves the inline edge colour stuck on its initial value in Chromium,
+     so edge/shadow changes are applied instantly while only transform glides.
+     0.5s easeOutCubic — snappier than the old 0.72s expo, whose long flat tail
+     read as sluggish; synced with the stack height transition above. */
+  transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* —— Live slab (index 0): a real DOM surface skewed onto the dimetric top face,
+   replacing the baked CRM PNG. The slab box keeps .slab's positioning + the
+   inline deck transform/shadow; .liveFace skews the content into the 2:1 plane.
+   The inline drop-shadow filter (set in TSX) shadows the skewed face for free,
+   matching the PNG siblings. —— */
+.slabLive {
+  /* img siblings derive height from the PNG ratio; a <div> needs it explicit */
+  height: calc(var(--slab-w) * var(--slab-ratio));
+}
+.liveFace {
+  /* ===== DIMETRIC TUNING KNOBS — adjust these to blend with the PNG slabs =====
+     The face is rotated 45° into the ground plane, then squashed vertically to
+     the 2:1 dimetric ratio (scale-y ~0.5). skew-x nudges the parallelogram if
+     the slab's plan isn't a perfect square. Order below = rotate, then skew,
+     then squash (CSS applies right-to-left). */
+  --iso-rotate: -45deg;   /* in-plane rotation — sets which way the axes recede */
+  --iso-scale-y: 0.5;     /* vertical squash → exact 2:1 dimetric foreshortening */
+  --iso-skew-x: 0deg;     /* fine-tune the parallelogram lean */
+  --iso-scale: 1.08;      /* overall face size within the slab box */
+  --slab-edge: #DBDDDB;   /* light grey slab side (matches the PNG edges) */
+  --slab-edge-2: #C9CCC9; /* darker bottom lip */
+  /* =========================================================================== */
+  position: absolute;
+  /* pre-transform rect (landscape) — its centre sits at the slab-box centre so
+     the projected diamond lands over where the PNG faces sit */
+  inset: 4% 7%;
+  transform: scale(var(--iso-scale)) scaleY(var(--iso-scale-y))
+    skewX(var(--iso-skew-x)) rotate(var(--iso-rotate));
+  transform-origin: center center;
+  border-radius: 7px;
+  overflow: hidden;
+  /* Faux slab thickness: step the shadow along the LOCAL diagonal (-x,+y) which,
+     after rotate(-45)+squash, projects to a STRAIGHT-DOWN screen extrusion — so
+     the live slab gains the same visible depth as the PNG siblings. */
+  box-shadow:
+    -3px 3px 0 var(--slab-edge),
+    -6px 6px 0 var(--slab-edge),
+    -9px 9px 0 var(--slab-edge),
+    -12px 12px 0 var(--slab-edge-2),
+    -14px 14px 5px rgba(20, 17, 15, 0.18);
+}
+
+/* —— Labels: absolutely anchored, alternating sides down the stack —— */
+.label {
+  position: absolute;
+  width: 14rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.3s ease;
+  font-family: inherit;
+}
+.label.active {
+  color: var(--ink);
+}
+/* Anchor points roughly track each slab's level in the exploded stack.
+   Pushed out toward the scene edges (and the right column further right) so the
+   labels keep clear of the now-larger stack and read with more breathing room. */
+.pos0 { left: -3%; top: 20%; }   /* Management — upper left  */
+.pos1 { left: 80%; top: 40%; }   /* Orchestration — mid right */
+.pos2 { left: -3%; top: 64%; }   /* Business Context — lower left */
+.pos3 { left: 80%; top: 84%; }   /* Infrastructure — bottom right */
+
+.labelName {
+  font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.35rem;
+}
+.labelDesc {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #5B635F;
+  margin: 0;
+}
+
+/* The orange marker: a short dash that glides to sit above the active label.
+   A single element moved via transform (FLIP-style shared element). */
+.marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.5rem;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--accent);
+  opacity: 0;
+  will-change: transform;
+  pointer-events: none;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+/* —— Responsive: stack labels in a column beneath the diagram, no pin —— */
+@media (max-width: 900px) {
+  .section {
+    --slab-w: 17rem;
+  }
+  .scene {
+    aspect-ratio: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+  .stack {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    margin-inline: auto;
+  }
+  .label {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100%;
+    max-width: 22rem;
+    padding-left: 1.25rem;
+    border-left: 2px solid transparent;
+  }
+  .label.active {
+    border-left-color: var(--accent);
+  }
+  .marker {
+    display: none;
+  }
+}
+
+/* Reduced motion: layers snap between open states instead of gliding. */
+@media (prefers-reduced-motion: reduce) {
+  .slab,
+  .stack,
+  .label,
+  .marker {
+    transition: none;
+  }
+}
