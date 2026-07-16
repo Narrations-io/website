@@ -195,7 +195,7 @@ export default function ProductsOverviewTabs() {
                   key={logo.alt}
                   src={logo.src}
                   alt={logo.alt}
-                  className={`${logo.sizeCls ?? LOGO_SIZE} logo-white w-auto opacity-90`}
+                  className={`${logo.sizeCls ?? LOGO_SIZE} logo-white w-auto`}
                 />
               ))}
             </div>
