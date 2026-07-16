@@ -19,9 +19,10 @@ export default function ProductsOverviewHero() {
           A platform with six products.
         </h1>
         <p className="mt-5 max-w-[62ch] text-base leading-7 text-ink-500 md:text-lg md:leading-8">
-          Start with one product or run all six, each drafting from the foundation we built for
-          your organisation, so you stay focused on the business and scale it rather than spend
-          time on plumbing.
+          Every product is built with the forward-deployed operator at the center. Start with one
+          or run all six, each drafting from the foundation we built for your organisation, so you
+          stay focused on the business and let the software scale it, rather than spending time on
+          plumbing.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
