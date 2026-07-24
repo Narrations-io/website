@@ -6,7 +6,7 @@
 // Content is sourced entirely from components/product/data/products.data.ts
 // (no invented copy/stats, per CLAUDE.md §8).
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import OperatorsSection from "@/components/OperatorsSection";
 import {
   Boxes,
@@ -15,6 +15,8 @@ import {
   ShieldCheck,
   Users,
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { PRODUCTS } from "@/components/product/data/products.data";
 
@@ -61,7 +63,10 @@ const CLIENT_LOGOS = [
   { src: "/brands/uniform/sui.png", alt: "Sui" },
   { src: "/brands/uniform/ledger.png", alt: "Ledger" },
   { src: "/brands/uniform/skrill.png", alt: "Skrill", sizeCls: "h-[23px] md:h-[34px]" },
-  { src: "/brands/uniform/internet-computer.png", alt: "Internet Computer (ICP)", sizeCls: "h-[50px] md:h-[63px]" },
+  // The ICP tile is a 2:1 asset, so h-[50px] rendered 100px wide against the
+  // ~92px cell a 3-col grid leaves at 390px — it overran into its neighbour.
+  // Capped to 40px (80px wide) below `sm`; `sm`+ keeps the original ladder.
+  { src: "/brands/uniform/internet-computer.png", alt: "Internet Computer (ICP)", sizeCls: "h-[40px] sm:h-[50px] md:h-[63px]" },
   { src: "/brands/uniform/m2.png", alt: "M2" },
 ];
 
@@ -69,6 +74,61 @@ export default function ProductsOverviewTabs() {
   const [active, setActive] = useState(0);
   const p = PRODUCTS[active];
   const Icon = p.icon;
+
+  // Tab strip: the six tabs total ~650px of intrinsic width against a 342px
+  // phone content box, so flex-wrap split them across three ragged rows and the
+  // active tab's -mb-px attachment pointed at nothing. Below `sm` the strip is a
+  // single-line snap rail instead; keep the selected tab visible when it changes.
+  const tabsRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const strip = tabsRef.current;
+    if (!strip) return;
+    // Only a scroller below `sm`; above it there is nothing to scroll.
+    if (strip.scrollWidth <= strip.clientWidth) return;
+    const tab = strip.children[active] as HTMLElement | undefined;
+    if (!tab) return;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    strip.scrollTo({
+      left: tab.offsetLeft - (strip.clientWidth - tab.offsetWidth) / 2,
+      behavior: reduced ? "auto" : "smooth",
+    });
+  }, [active]);
+
+  // Platform-layer band: the six capability cards stacked single-column ran
+  // 1458px below `sm` — 1.7 phone screens. Same snap-rail + arrow treatment as
+  // EnterpriseModules, light-world tokens. `sm`+ reverts to the existing grid.
+  const capRailRef = useRef<HTMLUListElement | null>(null);
+  const [cap, setCap] = useState(0);
+  const CAP_LAST = PLATFORM_CAPABILITIES.length - 1;
+
+  const onCapScroll = useCallback(() => {
+    const rail = capRailRef.current;
+    const card = rail?.firstElementChild as HTMLElement | null;
+    if (!rail || !card) return;
+    const stride = card.offsetWidth + 16; // gap-4
+    setCap(Math.min(CAP_LAST, Math.max(0, Math.round(rail.scrollLeft / stride))));
+  }, [CAP_LAST]);
+
+  // The rail only exists below `sm`; reset the index when the arrows disappear
+  // so the label can't go stale on a resize up to tablet/desktop.
+  useEffect(() => {
+    const wide = matchMedia("(min-width: 640px)");
+    const sync = () => wide.matches && setCap(0);
+    sync();
+    wide.addEventListener("change", sync);
+    return () => wide.removeEventListener("change", sync);
+  }, []);
+
+  const goCap = useCallback((next: number) => {
+    const rail = capRailRef.current;
+    const card = rail?.firstElementChild as HTMLElement | null;
+    if (!rail || !card) return;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    rail.scrollTo({
+      left: next * (card.offsetWidth + 16),
+      behavior: reduced ? "auto" : "smooth",
+    });
+  }, []);
 
   return (
     <>
@@ -83,8 +143,14 @@ export default function ProductsOverviewTabs() {
         </p>
       </div>
 
-      {/* Tabs — browser-tab strip, attached directly to the panel below */}
-      <div className="mt-10 flex flex-wrap items-end justify-center gap-1 px-1">
+      {/* Tabs — browser-tab strip, attached directly to the panel below.
+          Phone: single-line snap rail (see the scroll-into-view effect above).
+          The -mb-px panel attachment and the 3px inactive nudge are `sm`+ only:
+          inside the phone scroller they'd be clipped by the overflow box. */}
+      <div
+        ref={tabsRef}
+        className="mt-10 flex snap-x snap-mandatory items-end gap-1 overflow-x-auto px-1 sm:flex-wrap sm:justify-center sm:snap-none sm:overflow-x-visible"
+      >
         {PRODUCTS.map((item, i) => {
           const isActive = i === active;
           return (
@@ -93,10 +159,10 @@ export default function ProductsOverviewTabs() {
               type="button"
               onClick={() => setActive(i)}
               aria-current={isActive ? "true" : undefined}
-              className={`relative rounded-t-[10px] border border-b-0 px-4 py-2.5 text-sm font-semibold transition-all ${
+              className={`relative shrink-0 snap-start rounded-t-[10px] border border-b-0 px-4 py-2.5 text-sm font-semibold transition-all sm:shrink ${
                 isActive
-                  ? "z-10 -mb-px border-green-600 bg-green-500 text-white shadow-[0_-2px_6px_rgba(14,19,17,0.04)]"
-                  : "translate-y-[3px] border-ink-300/50 bg-sunken text-ink-500 hover:translate-y-0 hover:border-ink-300/70 hover:text-ink-700"
+                  ? "z-10 border-green-600 bg-green-500 text-white shadow-[0_-2px_6px_rgba(14,19,17,0.04)] sm:-mb-px"
+                  : "border-ink-300/50 bg-sunken text-ink-500 hover:border-ink-300/70 hover:text-ink-700 sm:translate-y-[3px] sm:hover:translate-y-0"
               }`}
             >
               {item.name}
@@ -163,14 +229,51 @@ export default function ProductsOverviewTabs() {
           </p>
         </div>
 
-        <div className="mx-auto mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Phone: snap rail (cards at 82% so the next one peeks, signalling the
+            swipe). `sm`+: the identical markup resolves back to the grid. */}
+        <ul
+          ref={capRailRef}
+          onScroll={onCapScroll}
+          className="mx-auto mt-14 flex snap-x snap-mandatory gap-4 overflow-x-auto sm:grid sm:snap-none sm:grid-cols-2 sm:overflow-x-visible lg:grid-cols-3"
+        >
           {PLATFORM_CAPABILITIES.map((c) => (
-            <div key={c.title} className="rounded-[16px] border border-ink-300/50 bg-paper p-5">
+            <li
+              key={c.title}
+              className="w-[82%] shrink-0 snap-start rounded-[16px] border border-ink-300/50 bg-paper p-5 sm:w-auto sm:shrink"
+            >
               <c.icon size={20} className="text-green-500" aria-hidden />
               <p className="mt-3 text-base font-semibold text-ink-900">{c.title}</p>
               <p className="mt-2 text-sm leading-6 text-ink-500">{c.body}</p>
-            </div>
+            </li>
           ))}
+        </ul>
+
+        {/* Phone-only cycle control — light-world tokens, matching this band */}
+        <div className="mt-6 flex items-center justify-center gap-3 sm:hidden">
+          <button
+            type="button"
+            onClick={() => goCap(cap - 1)}
+            disabled={cap === 0}
+            aria-label="Previous capability"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill border border-line bg-paper text-ink-700 transition-colors hover:bg-sunken disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronLeft size={18} aria-hidden />
+          </button>
+          <p
+            aria-live="polite"
+            className="min-w-[150px] text-center text-[15px] font-semibold tracking-tight text-ink-900"
+          >
+            {PLATFORM_CAPABILITIES[cap].title}
+          </p>
+          <button
+            type="button"
+            onClick={() => goCap(cap + 1)}
+            disabled={cap === CAP_LAST}
+            aria-label="Next capability"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill border border-line bg-paper text-ink-700 transition-colors hover:bg-sunken disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronRight size={18} aria-hidden />
+          </button>
         </div>
       </div>
     </section>
@@ -195,7 +298,7 @@ export default function ProductsOverviewTabs() {
                   key={logo.alt}
                   src={logo.src}
                   alt={logo.alt}
-                  className={`${logo.sizeCls ?? LOGO_SIZE} logo-white w-auto opacity-90`}
+                  className={`${logo.sizeCls ?? LOGO_SIZE} logo-white w-auto`}
                 />
               ))}
             </div>

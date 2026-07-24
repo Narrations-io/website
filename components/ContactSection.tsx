@@ -12,15 +12,18 @@ import {
 const INTERESTS = [
   "Narrations platform (SaaS)",
   "Enterprise AI",
-  "Done-with-you (operators)",
+  "Forward-deployed operators (FDO)",
   "Partnership",
   "Other",
 ] as const;
 
 type Interest = (typeof INTERESTS)[number];
 
+// iOS Safari force-zooms the viewport when a focused field is under 16px, and every field here
+// was text-sm (14px) — tapping any of the six jerked the page in and had to be pinched back out.
+// text-base below sm gives phones 16px; sm+ keeps the original 14px so desktop is unchanged.
 const inputClass =
-  "h-11 w-full rounded-xl border border-white/12 bg-white/[0.03] px-4 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-green-500/50";
+  "h-11 w-full rounded-xl border border-white/12 bg-white/[0.03] px-4 text-base sm:text-sm text-white placeholder:text-white/35 outline-none transition focus:border-green-500/50";
 
 type ContactSectionProps = {
   eyebrow?: string;
@@ -258,13 +261,14 @@ export default function ContactSection({
                 >
                   Interest <span className="text-green-500">*</span>
                 </label>
+                {/* text-base below sm: 16px stops the iOS focus-zoom (see inputClass) */}
                 <select
                   id="contact-interest"
                   name="interest"
                   required
                   value={interest}
                   onChange={(e) => setInterest(e.target.value as Interest)}
-                  className="h-11 w-full appearance-none rounded-xl border border-white/12 bg-white/[0.03] px-4 text-sm text-white outline-none transition focus:border-green-500/50"
+                  className="h-11 w-full appearance-none rounded-xl border border-white/12 bg-white/[0.03] px-4 text-base sm:text-sm text-white outline-none transition focus:border-green-500/50"
                 >
                   {INTERESTS.map((opt) => (
                     <option key={opt} value={opt} className="bg-dpanel">
@@ -281,22 +285,28 @@ export default function ContactSection({
                 >
                   Message <span className="text-green-500">*</span>
                 </label>
+                {/* text-base below sm: 16px stops the iOS focus-zoom (see inputClass) */}
                 <textarea
                   id="contact-message"
                   name="message"
                   required
                   rows={5}
                   placeholder="What you're building and what you need from us"
-                  className="w-full rounded-xl border border-white/12 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-green-500/50"
+                  className="w-full rounded-xl border border-white/12 bg-white/[0.03] px-4 py-3 text-base sm:text-sm text-white placeholder:text-white/35 outline-none transition focus:border-green-500/50"
                 />
               </div>
 
               <label className="mt-5 flex cursor-pointer items-start gap-3 text-sm text-white/70">
-                <input
-                  type="checkbox"
-                  name="newsletter"
-                  className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/[0.03] accent-green-500"
-                />
+                {/* The 16px box was the whole tap target, well under the 44px minimum on phones.
+                    p-3.5 grows the hit area to 44x44 and the matching -m-3.5 cancels it out of
+                    layout, so the checkbox and its spacing look exactly as before. */}
+                <span className="-m-3.5 flex shrink-0 p-3.5">
+                  <input
+                    type="checkbox"
+                    name="newsletter"
+                    className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/[0.03] accent-green-500"
+                  />
+                </span>
                 Yes, I&rsquo;d like to receive updates from Narrations.
               </label>
 

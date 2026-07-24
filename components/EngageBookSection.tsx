@@ -42,9 +42,9 @@ export default function EngageBookSection() {
   return (
     <section id="book-a-demo" className="scroll-mt-24 bg-green-50">
       <div className="mx-auto max-w-[1200px] px-6 pb-16 pt-24 md:pb-20 md:pt-28">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-0">
+        <div className="grid gap-12 md:grid-cols-2 md:gap-6 lg:gap-0">
           {/* LEFT — selectable tracks */}
-          <div className="lg:flex lg:flex-col lg:pr-10">
+          <div className="md:flex md:flex-col md:pr-6 lg:pr-10">
             <p className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-green-500">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden />
               Book a demo
@@ -87,7 +87,9 @@ export default function EngageBookSection() {
                       <h3 className="text-[15px] font-semibold text-ink-900">
                         {title}
                       </h3>
-                      <p className="mt-1 text-[13px] leading-6 text-ink-700">
+                      {/* Full-width on phones, so this is the band's main
+                          reading text — Caption 13px was below the Body scale. */}
+                      <p className="mt-1 text-[15px] leading-6 text-ink-700 sm:text-[13px]">
                         {text}
                       </p>
                     </div>
@@ -98,7 +100,7 @@ export default function EngageBookSection() {
           </div>
 
           {/* RIGHT — Booking */}
-          <div className="lg:border-l lg:border-line lg:pl-10">
+          <div className="md:border-l md:border-line md:pl-6 lg:pl-10">
             <BookingCard selectedTracks={selectedTitles} />
           </div>
         </div>

@@ -201,8 +201,11 @@
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
-/* —— Responsive: stack labels in a column beneath the diagram, no pin —— */
-@media (max-width: 900px) {
+/* —— Responsive: stack labels in a column beneath the diagram, no pin ——
+   1023px matches the site's lg (1024px) breakpoint used everywhere else,
+   so this section switches to mobile layout in lockstep with its
+   siblings instead of at a bespoke 900px cutoff. */
+@media (max-width: 1023px) {
   .section {
     --slab-w: 17rem;
   }
@@ -231,6 +234,15 @@
   }
   .label.active {
     border-left-color: var(--accent);
+  }
+  /* Below lg the labels stop being compact annotations pinned around the
+     isometric diagram and become the section's primary body copy in a stacked
+     column. At the lg+ size (0.8rem / 12.8px) they measured under the 13px
+     Caption floor and well under the 15-16px Body scale, so lift them to 16px
+     here only. Colour is unchanged (#5B635F on surface ≈ 5.9:1, AA at any size). */
+  .labelDesc {
+    font-size: 1rem;
+    line-height: 1.6;
   }
   .marker {
     display: none;

@@ -2,7 +2,8 @@ import { ArrowRight } from "lucide-react";
 import EngagementCards from "@/components/ui/EngagementCards";
 
 // Homepage §4 — Operators band. Platform-first, services-backed: the three
-// engagement models (CLAUDE.md §2 — SaaS / Enterprise AI / Done-with-you).
+// engagement models (CLAUDE.md §2 — SaaS / Enterprise AI / forward-deployed
+// operators).
 // Cards are extracted into EngagementCards so product pages reuse them.
 
 export default function OperatorsSection() {

@@ -30,7 +30,7 @@ export default function EnterpriseStages() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_60%_at_80%_50%,rgba(31,107,76,0.12),transparent_70%)]"
       />
-      <div className="relative mx-auto max-w-[1200px] px-6 py-24 md:py-28">
+      <div className="relative mx-auto max-w-[1200px] px-6 py-24 max-sm:pb-12 md:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <p className="flex items-center justify-center gap-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-green-400">
             <span className="h-1.5 w-1.5 rounded-full bg-green-400" aria-hidden />
@@ -45,14 +45,28 @@ export default function EnterpriseStages() {
           </p>
         </div>
 
-        <ol className="mt-14 grid gap-8 md:grid-cols-4">
+        {/* On phones (< sm) each stage is number-left / content-right and
+            flushed left — the centered single column read badly. At sm+ the
+            original centered layout returns (2-up / 4-up grid), untouched. */}
+        <ol className="mt-14 grid gap-8 max-sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {STAGES.map(({ label, body }, i) => (
-            <li key={label} className="flex flex-col items-center text-center">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-green-400 bg-green-400/10 text-xs font-semibold text-green-400">
+            <li
+              key={label}
+              className="flex flex-row items-start gap-4 text-left sm:flex-col sm:items-center sm:gap-0 sm:text-center"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-green-400 bg-green-400/10 text-xs font-semibold text-green-400">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <h3 className="mt-4 text-sm font-semibold text-white">{label}</h3>
-              <p className="mt-2 text-sm leading-6 text-[--d-text-mid]">{body}</p>
+              {/* Groups label+body beside the number on mobile; display:contents
+                  at sm+ dissolves it so the centered column is byte-identical. */}
+              <div className="sm:contents">
+                <h3 className="text-sm font-semibold text-white sm:mt-4">
+                  {label}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[--d-text-mid]">
+                  {body}
+                </p>
+              </div>
             </li>
           ))}
         </ol>

@@ -50,7 +50,10 @@ export default function BlogIndexPage() {
                 <h2 className="mt-2 text-xl font-semibold text-ink-900 transition-colors group-hover:text-green-600">
                   {post.title}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-ink-700">{post.dek}</p>
+                {/* Dek was text-sm (14px), so the index read smaller than the
+                    articles it links to (text-base). Pulled onto the 15-16px
+                    Body scale to match the post pages. */}
+                <p className="mt-2 text-[15px] leading-7 text-ink-700">{post.dek}</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-green-500">
                   Read
                   <ArrowRight

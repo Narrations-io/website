@@ -294,20 +294,45 @@ function TeaseOverlay() {
 
 function ScaledPreview({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-[460px] w-[840px] max-w-none overflow-hidden">
+    // Outer box collapses to the visually-scaled height below `lg` so the
+    // surrounding grid doesn't reserve dead space; at `lg` and up this is
+    // byte-identical to the original 840x460 box (scale-100, h-[460px]).
+    <div className="h-[184px] w-full max-w-none overflow-hidden sm:h-[253px] md:h-[345px] lg:h-[460px] lg:w-[840px]">
       <div
+        className="origin-top-left scale-[0.4] sm:scale-[0.55] md:scale-[0.75] lg:scale-100"
         style={{
-          transform: "scale(0.6667)",
-          transformOrigin: "top left",
           width: 1260,
           height: 690,
         }}
       >
-        {children}
+        <div
+          style={{
+            transform: "scale(0.6667)",
+            transformOrigin: "top left",
+            width: 1260,
+            height: 690,
+          }}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );
 }
+
+// ── Static desktop composition inside the scaled mocks ──────────────────────
+// The mocks render at a fixed 1260x690 and ScaledPreview CSS-scales them down as
+// a picture. Tailwind's `sm:` is a VIEWPORT media query, not a container query,
+// so on a 390px phone `hidden sm:flex` fired on the phone width and hid chrome
+// *inside* the 1260px box: the top-bar search field and each sub-nav's secondary
+// action chip vanished, so the "desktop dashboard" screenshot showed a
+// stripped-down UI that doesn't exist in the product. The chrome below is
+// therefore shown unconditionally — same fix as DashboardFrame's
+// `staticComposition` prop (commit 8c6079b). No opt-in prop is needed here:
+// MiniApp/SubnavTabs are file-private and ScaledPreview is their only render
+// path, so there is no other caller relying on the collapsing behaviour.
+const STATIC_CHROME = "flex";
+const STATIC_CHROME_INLINE = "inline-flex";
 
 function MiniApp({
   name,
@@ -336,7 +361,10 @@ function MiniApp({
             Live
           </span>
         </div>
-        <div className="hidden h-[39px] w-[270px] items-center gap-3 rounded-[12px] bg-sunken px-4 sm:flex">
+        {/* Search field: never viewport-gated — see STATIC_CHROME above. */}
+        <div
+          className={`${STATIC_CHROME} h-[39px] w-[270px] items-center gap-3 rounded-[12px] bg-sunken px-4`}
+        >
           <Search size={16} className="text-ink-300" />
           <span className="truncate text-[16px] text-ink-300">{search}</span>
         </div>
@@ -463,7 +491,10 @@ function ContentPreview() {
             </span>
           ))}
           <span className="ml-auto flex items-center gap-2">
-            <span className="hidden items-center gap-1.5 rounded-[10px] border border-line bg-paper px-3 py-1.5 text-[15px] font-medium text-ink-500 sm:inline-flex">
+            {/* Secondary chip: never viewport-gated — see STATIC_CHROME above. */}
+            <span
+              className={`${STATIC_CHROME_INLINE} items-center gap-1.5 rounded-[10px] border border-line bg-paper px-3 py-1.5 text-[15px] font-medium text-ink-500`}
+            >
               <FileText size={15} aria-hidden />
               New brief
             </span>
@@ -667,7 +698,10 @@ function MarketingPreview() {
             </span>
           ))}
           <span className="ml-auto flex items-center gap-2">
-            <span className="hidden items-center gap-1.5 rounded-[10px] border border-line bg-paper px-3 py-1.5 text-[15px] font-medium text-ink-500 sm:inline-flex">
+            {/* Secondary chip: never viewport-gated — see STATIC_CHROME above. */}
+            <span
+              className={`${STATIC_CHROME_INLINE} items-center gap-1.5 rounded-[10px] border border-line bg-paper px-3 py-1.5 text-[15px] font-medium text-ink-500`}
+            >
               <Calendar size={15} aria-hidden />
               Schedule
             </span>
@@ -972,7 +1006,10 @@ function SubnavTabs({
         </span>
       ))}
       <span className="ml-auto flex items-center gap-2">
-        <span className="hidden items-center gap-1.5 rounded-[10px] border border-line bg-paper px-3 py-1.5 text-[15px] font-medium text-ink-500 sm:inline-flex">
+        {/* Secondary chip: never viewport-gated — see STATIC_CHROME above. */}
+        <span
+          className={`${STATIC_CHROME_INLINE} items-center gap-1.5 rounded-[10px] border border-line bg-paper px-3 py-1.5 text-[15px] font-medium text-ink-500`}
+        >
           <secondary.Icon size={15} aria-hidden />
           {secondary.label}
         </span>
@@ -1756,7 +1793,7 @@ export default function ProductShowcaseSection() {
 
   return (
     <section id="product-showcase" className="bg-paper">
-      <div className="mx-auto max-w-[1200px] px-6 py-24 md:py-28">
+      <div className="mx-auto max-w-[1200px] px-6 py-24 max-sm:pb-12 md:py-28">
         {/* Intro */}
         <div className="mx-auto max-w-2xl text-center">
           <Link
@@ -1777,12 +1814,16 @@ export default function ProductShowcaseSection() {
           </p>
         </div>
 
-        {/* Tab row */}
+        {/* Tab row — hidden below `sm`, where the arrow row below the carousel
+            becomes the sole product control (name + accent-N between arrows).
+            Six ~88px tiles never fit a phone without sideways scroll; the arrow
+            row already existed for mobile, so this just removes the redundant
+            scroller. At `sm`+ the tiles return unchanged. */}
         <div
           role="tablist"
           aria-label="Narrations products"
           onKeyDown={onKeyDown}
-          className="mt-12 flex flex-nowrap gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0"
+          className="mt-12 hidden flex-wrap justify-center gap-2 sm:flex"
         >
           {PRODUCTS.map((prod, i) => {
             const selected = i === active;
@@ -1930,9 +1971,15 @@ export default function ProductShowcaseSection() {
           >
             <ChevronLeft size={18} aria-hidden />
           </button>
-          <span className="text-[13px] tabular-nums text-ink-500">
-            {active + 1} / {PRODUCTS.length}
-          </span>
+          <ProductName
+            name={PRODUCTS[active].name}
+            pre={PRODUCTS[active].pre}
+            post={PRODUCTS[active].post}
+            px={17}
+            weight={600}
+            tone="light"
+            className="min-w-[150px] text-center tracking-tight text-ink-900"
+          />
           <button
             type="button"
             onClick={() => go(active + 1)}

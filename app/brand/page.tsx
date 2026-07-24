@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import SiteNav from "@/components/SiteNav";
 import NarrationsLogo from "@/components/NarrationsLogo";
 import NMark from "@/components/NMark";
 import ProductName from "@/components/ui/ProductName";
@@ -19,17 +20,57 @@ const MARK_FILES = [
   { file: "narrations-mark-dark.svg", dark: true },
 ];
 
-const COLORS = [
-  { name: "Evergreen", hex: "#07140F", rgb: "7, 20, 15", swatch: "#07140F", textOnDark: true },
-  { name: "Brand Green", hex: "#1F6B4C", rgb: "31, 107, 76", swatch: "#1F6B4C", textOnDark: true },
-  { name: "Off-white", hex: "#F3F5F0", rgb: "243, 245, 240", swatch: "#F3F5F0", textOnDark: false },
+/* The swatch labels sit on the swatch colour itself, so the text treatment has
+   to be chosen per swatch to stay AA (4.5:1) — the hex/RGB lines are content
+   users copy, not decoration. Measured (WCAG, alpha composited):
+     "onDark"  white / white-85 on #07140F, #1F6B4C, #0F2A20 → 5.4:1 to 18:1  ✓
+     "onLight" #0E1311 / black-70 on #F3F5F0, #FAFAF8        → 8.3:1+         ✓
+     "onMid"   Green 400 #2E8B63 is too light for white (4.21:1) and too dark
+               for black/70 (3.66:1); pure black is 4.99:1                    ✓ */
+type Tone = "onDark" | "onLight" | "onMid";
+
+const COLORS: { name: string; hex: string; rgb: string; swatch: string; tone: Tone }[] = [
+  { name: "Evergreen", hex: "#07140F", rgb: "7, 20, 15", swatch: "#07140F", tone: "onDark" },
+  { name: "Brand Green", hex: "#1F6B4C", rgb: "31, 107, 76", swatch: "#1F6B4C", tone: "onDark" },
+  { name: "Off-white", hex: "#F3F5F0", rgb: "243, 245, 240", swatch: "#F3F5F0", tone: "onLight" },
 ];
 
-const SUPPORTING = [
-  { name: "Panel", hex: "#0F2A20", rgb: "15, 42, 32", swatch: "#0F2A20", textOnDark: true },
-  { name: "Green 400", hex: "#2E8B63", rgb: "46, 139, 99", swatch: "#2E8B63", textOnDark: true },
-  { name: "Surface", hex: "#FAFAF8", rgb: "250, 250, 248", swatch: "#FAFAF8", textOnDark: false },
+const SUPPORTING: typeof COLORS = [
+  { name: "Panel", hex: "#0F2A20", rgb: "15, 42, 32", swatch: "#0F2A20", tone: "onDark" },
+  { name: "Green 400", hex: "#2E8B63", rgb: "46, 139, 99", swatch: "#2E8B63", tone: "onMid" },
+  { name: "Surface", hex: "#FAFAF8", rgb: "250, 250, 248", swatch: "#FAFAF8", tone: "onLight" },
 ];
+
+const SWATCH_NAME_CLASS: Record<Tone, string> = {
+  onDark: "text-white",
+  onLight: "text-[#0E1311]",
+  onMid: "text-black",
+};
+
+const SWATCH_SPEC_CLASS: Record<Tone, string> = {
+  onDark: "text-white/85",
+  onLight: "text-black/70",
+  onMid: "text-black",
+};
+
+function Swatch({ color }: { color: (typeof COLORS)[number] }) {
+  return (
+    <div
+      className="relative flex aspect-[3/2] flex-col justify-end rounded-[20px] p-6"
+      style={{ background: color.swatch }}
+    >
+      <p className={`text-[15px] font-semibold ${SWATCH_NAME_CLASS[color.tone]}`}>
+        {color.name}
+      </p>
+      <p className={`mt-1 font-mono text-[13px] ${SWATCH_SPEC_CLASS[color.tone]}`}>
+        RGB: {color.rgb}
+      </p>
+      <p className={`font-mono text-[13px] ${SWATCH_SPEC_CLASS[color.tone]}`}>
+        {color.hex}
+      </p>
+    </div>
+  );
+}
 
 function Section({
   label,
@@ -60,6 +101,10 @@ function Section({
 export default function BrandPage() {
   return (
     <main className="min-h-screen bg-[#07140F] text-white antialiased">
+      {/* This page shipped without any nav — no links and no hamburger on any
+          viewport. SiteNav (dark, the default) carries its own mobile drawer. */}
+      <SiteNav />
+
       <div className="mx-auto max-w-[1280px] px-8 pb-32 pt-24">
         {/* ─── HERO ─── */}
         <header className="relative grid gap-12 pb-[180px] pt-12 md:grid-cols-12">
@@ -82,10 +127,14 @@ export default function BrandPage() {
       </div>
 
       {/* ─── GIANT OUTLINED WATERMARK (N = Interlock mark) — full-bleed ─── */}
+      {/* The 96px clamp floor used to win under ~686px wide (14vw = 55px at
+          390px), so the nowrap mark measured ~480px in a ~358px box and read as
+          a clipped "arration". Dropping the floor lets 14vw drive on phones and
+          tablets; above ~686px the 14vw/200px behaviour is unchanged. */}
       <div
         aria-hidden
         className="pointer-events-none flex w-full select-none items-center justify-center overflow-hidden whitespace-nowrap px-4"
-        style={{ fontSize: "clamp(96px, 14vw, 200px)" }}
+        style={{ fontSize: "clamp(34px, 14vw, 200px)" }}
       >
         <svg
           viewBox="26 26 68 68"
@@ -211,52 +260,12 @@ export default function BrandPage() {
         >
           <div className="grid gap-3 md:grid-cols-3">
             {COLORS.map((c) => (
-              <div
-                key={c.hex}
-                className="relative flex aspect-[3/2] flex-col justify-end rounded-[20px] p-6"
-                style={{ background: c.swatch }}
-              >
-                <p
-                  className={`text-[14px] font-semibold ${c.textOnDark ? "text-white" : "text-[#0E1311]"}`}
-                >
-                  {c.name}
-                </p>
-                <p
-                  className={`mt-1 font-mono text-[11.5px] ${c.textOnDark ? "text-white/60" : "text-black/55"}`}
-                >
-                  RGB: {c.rgb}
-                </p>
-                <p
-                  className={`font-mono text-[11.5px] ${c.textOnDark ? "text-white/60" : "text-black/55"}`}
-                >
-                  {c.hex}
-                </p>
-              </div>
+              <Swatch key={c.hex} color={c} />
             ))}
           </div>
           <div className="mt-3 grid gap-3 md:grid-cols-3">
             {SUPPORTING.map((c) => (
-              <div
-                key={c.hex}
-                className="relative flex aspect-[3/2] flex-col justify-end rounded-[20px] p-6"
-                style={{ background: c.swatch }}
-              >
-                <p
-                  className={`text-[14px] font-semibold ${c.textOnDark ? "text-white" : "text-[#0E1311]"}`}
-                >
-                  {c.name}
-                </p>
-                <p
-                  className={`mt-1 font-mono text-[11.5px] ${c.textOnDark ? "text-white/60" : "text-black/55"}`}
-                >
-                  RGB: {c.rgb}
-                </p>
-                <p
-                  className={`font-mono text-[11.5px] ${c.textOnDark ? "text-white/60" : "text-black/55"}`}
-                >
-                  {c.hex}
-                </p>
-              </div>
+              <Swatch key={c.hex} color={c} />
             ))}
           </div>
         </Section>
@@ -284,8 +293,11 @@ export default function BrandPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
                 Headlines
               </p>
+              {/* 88px at every viewport punched through the card border and
+                  pushed the document to 471px wide in a 390px window (card
+                  inner width is only ~246px there). Steps back up to 88px at lg. */}
               <p
-                className="text-[88px] font-semibold leading-[0.95] tracking-[-0.03em] text-white"
+                className="text-[40px] font-semibold leading-[0.95] tracking-[-0.03em] text-white sm:text-[56px] lg:text-[88px]"
                 style={{ marginTop: "auto" }}
               >
                 Satoshi
@@ -301,8 +313,9 @@ export default function BrandPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
                 Body &amp; UI
               </p>
+              {/* Same overflow as the Headlines specimen above. */}
               <p
-                className="text-[88px] font-normal leading-[0.95] tracking-[-0.02em] text-white"
+                className="text-[40px] font-normal leading-[0.95] tracking-[-0.02em] text-white sm:text-[56px] lg:text-[88px]"
                 style={{ marginTop: "auto" }}
               >
                 Satoshi

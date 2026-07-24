@@ -25,18 +25,12 @@ export default function EnterpriseHero() {
           running in your own environment, with full control over knowledge,
           permissions and governance.
         </p>
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div className="mt-8 flex flex-wrap">
           <Link
             href="/contact"
             className="inline-flex items-center gap-2 rounded-pill bg-green-500 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-600"
           >
             Talk to us about Enterprise AI <ArrowRight size={15} aria-hidden />
-          </Link>
-          <Link
-            href="/products"
-            className="inline-flex items-center gap-2 rounded-pill border border-white/15 bg-white/[0.05] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/[0.1]"
-          >
-            See the platform
           </Link>
         </div>
       </div>

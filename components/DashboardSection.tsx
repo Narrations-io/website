@@ -313,7 +313,7 @@ function TasksRing() {
 // Constant right rail — same content on every tab.
 function OpsRail() {
   return (
-    <aside className="flex shrink-0 flex-col gap-2.5 lg:w-[232px]">
+    <aside className="flex w-[232px] shrink-0 flex-col gap-2.5">
       {/* 1) Activity & triage — static illustrative chrome */}
       <div className="rounded-[10px] border border-line p-2.5">
         <p className="text-[11px] font-semibold text-ink-900">
@@ -366,14 +366,36 @@ export default function DashboardSection() {
   const [reduced, setReduced] = useState(false);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Reduced motion: freeze on the finished view, no loop, no spinners.
+  // Freeze on the finished view — no loop, no spinners — in two cases:
+  //
+  //  1. prefers-reduced-motion, as always.
+  //  2. below `lg`, where the cockpit renders scaled to ~0.33 (see the render
+  //     below). The dashboard is a placeholder for *feel*, not something to
+  //     read, and at that scale the 16s demo is ~4px of motion nobody can see —
+  //     so running it only burns timers, re-renders and battery on phones.
+  //
+  // Both feed the single `reduced` gate the loop effects already check, rather
+  // than adding a parallel switch. This is a listener, not a one-shot read:
+  // crossing the 1024px boundary by resizing has to start/stop the loop, and
+  // the original prefers-reduced-motion check never re-ran either.
   useEffect(() => {
-    const mq = matchMedia("(prefers-reduced-motion: reduce)");
-    if (mq.matches) {
-      setReduced(true);
-      setPhase("done");
-      if (MARKETING_INDEX >= 0) setActive(MARKETING_INDEX);
-    }
+    const motion = matchMedia("(prefers-reduced-motion: reduce)");
+    const belowLg = matchMedia("(max-width: 1023.98px)");
+    const sync = () => {
+      const off = motion.matches || belowLg.matches;
+      setReduced(off);
+      if (off) {
+        setPhase("done");
+        if (MARKETING_INDEX >= 0) setActive(MARKETING_INDEX);
+      }
+    };
+    sync();
+    motion.addEventListener("change", sync);
+    belowLg.addEventListener("change", sync);
+    return () => {
+      motion.removeEventListener("change", sync);
+      belowLg.removeEventListener("change", sync);
+    };
   }, []);
 
   // running → done
@@ -417,7 +439,11 @@ export default function DashboardSection() {
 
   return (
     <section className="bg-surface">
-      <div className="mx-auto grid max-w-[1200px] gap-12 px-6 py-24 md:py-28 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] lg:items-center lg:gap-10">
+      {/* Below `lg` the grid is a single explicit minmax(0,1fr) column. Without
+          it the implicit column sizes to the cockpit's fixed 1040px width and
+          stretches the copy column with it, pushing the H2 off the right edge
+          (measured: 1088px scrollWidth at a 390px viewport). */}
+      <div className="mx-auto grid max-w-[1200px] grid-cols-[minmax(0,1fr)] gap-12 px-6 py-24 md:py-28 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] lg:items-center lg:gap-10">
         {/* Left: copy */}
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-green-500">
@@ -454,9 +480,12 @@ export default function DashboardSection() {
           </a>
         </div>
 
-        {/* Right: operations cockpit on a brand glow. Hover/focus pauses. */}
+        {/* Right: operations cockpit on a brand glow. Hover/focus pauses.
+            Below `lg` it leads the section (`order-first`) — the stacked phone
+            layout is visual-first, picture then copy; at `lg` the source order
+            resumes and the cockpit sits in the right column as before. */}
         <div
-          className="relative"
+          className="relative order-first lg:order-none"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
           onFocusCapture={() => setPaused(true)}
@@ -469,8 +498,33 @@ export default function DashboardSection() {
             aria-hidden
             className="pointer-events-none absolute -inset-6 -z-10 rounded-[40px] bg-green-500/10 blur-2xl"
           />
+          {/* Below `lg` the cockpit is a PICTURE, not a thing to read: it
+              renders at its true 1040x620 desktop size and scales down, the
+              same treatment the homepage gives its cockpit (ProductShowcase's
+              ScaledPreview). It used to reflow instead — sidebar dropped, KPIs
+              2-up, rail stacked — which left a dense 8-11px enterprise UI
+              crushed into ~302px: too small to read, too broken to look like a
+              dashboard.
+
+              `staticComposition` is what makes this work. Tailwind's sm:/md:
+              are VIEWPORT queries, so inside the 1040px box on a phone the
+              frame would still collapse and we'd be scaling a *mobile* layout.
+
+              Centring: the flex parent centres the UNSCALED 1040px frame (it
+              overflows both edges equally, so its centre is already the box's
+              centre) and `origin-top` scales about that centre, holding it
+              still. `flex-none` is load-bearing — flex items shrink by
+              default, which would squash the frame before the scale applied.
+
+              The wrapper heights are 620 * each scale, so no dead space is
+              reserved. It's a separate box from the `relative` parent above so
+              the brand glow (-inset-6) still bleeds instead of being clipped.
+              At `lg` every value below resolves to the original
+              `w-full` + `h-[620px]`, so desktop is untouched. */}
+          <div className="flex justify-center overflow-hidden h-[205px] sm:h-[310px] md:h-[403px] lg:block lg:h-auto lg:overflow-visible">
           <DashboardFrame
-            className="w-full lg:h-[620px]"
+            className="h-[620px] w-[1040px] flex-none origin-top scale-[0.33] sm:scale-[0.5] md:scale-[0.65] lg:w-full lg:scale-100"
+            staticComposition
             showSidebarLabel
             menuItems={MENU}
             platformItems={PLATFORM}
@@ -484,44 +538,55 @@ export default function DashboardSection() {
           >
             <div className="flex min-h-0 flex-1 flex-col">
               {/* Tab bar — real buttons, accessible, mobile-scrollable */}
-              <div
-                role="tablist"
-                aria-label="Products"
-                onKeyDown={onKeyDown}
-                className="-mx-1 flex gap-1 overflow-x-auto border-b border-line px-1 pb-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              >
-                {PRODUCTS.map((p, i) => {
-                  const on = i === active;
-                  const Icon = p.icon;
-                  return (
-                    <button
-                      key={p.slug}
-                      ref={(el) => {
-                        tabRefs.current[i] = el;
-                      }}
-                      role="tab"
-                      id={`pdtab-${p.slug}`}
-                      aria-selected={on}
-                      aria-controls={`pdpanel-${p.slug}`}
-                      aria-label={p.name}
-                      tabIndex={on ? 0 : -1}
-                      onClick={() => select(i)}
-                      className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 py-2 text-[12px] transition-colors ${
-                        on
-                          ? "border-green-500 font-semibold text-ink-900"
-                          : "border-transparent text-ink-500 hover:text-ink-700"
-                      }`}
-                    >
-                      <Icon size={13} strokeWidth={2} aria-hidden />
-                      <ProductName name={p.name} pre={p.pre} post={p.post} />
-                    </button>
-                  );
-                })}
+              <div className="relative">
+                <div
+                  role="tablist"
+                  aria-label="Products"
+                  onKeyDown={onKeyDown}
+                  className="-mx-1 flex gap-1 overflow-x-auto border-b border-line px-1 pb-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                >
+                  {PRODUCTS.map((p, i) => {
+                    const on = i === active;
+                    const Icon = p.icon;
+                    return (
+                      <button
+                        key={p.slug}
+                        ref={(el) => {
+                          tabRefs.current[i] = el;
+                        }}
+                        role="tab"
+                        id={`pdtab-${p.slug}`}
+                        aria-selected={on}
+                        aria-controls={`pdpanel-${p.slug}`}
+                        aria-label={p.name}
+                        tabIndex={on ? 0 : -1}
+                        onClick={() => select(i)}
+                        className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 py-2 text-[12px] transition-colors ${
+                          on
+                            ? "border-green-500 font-semibold text-ink-900"
+                            : "border-transparent text-ink-500 hover:text-ink-700"
+                        }`}
+                      >
+                        <Icon size={13} strokeWidth={2} aria-hidden />
+                        <ProductName name={p.name} pre={p.pre} post={p.post} />
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* The mobile edge-fade that used to live here is gone: it hinted
+                    the tab strip scrolls, which was true only while the frame
+                    reflowed to phone width. The frame is now a fixed 1040px box
+                    at every viewport, so the six tabs always fit and the fade
+                    was advertising a scroll that no longer exists. */}
               </div>
 
               {/* Zones: CENTER (per-tab panel) + CONSTANT right rail.
                   Three columns on lg; rail stacks BELOW center on mobile. */}
-              <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 lg:flex-row">
+              {/* Always `flex-row` now: the frame is a fixed 1040px box at
+                  every viewport (scaled below lg), so the rail always has room
+                  beside the centre pane. `lg:flex-row` resolved to this anyway,
+                  so desktop is unchanged. */}
+              <div className="mt-4 flex min-h-0 flex-1 flex-row gap-4">
                 {/* CENTER — per-product panel, re-keyed so the entrance replays */}
                 <div
                   key={product.slug}
@@ -613,6 +678,7 @@ export default function DashboardSection() {
               </div>
             </div>
           </DashboardFrame>
+          </div>
         </div>
       </div>
     </section>

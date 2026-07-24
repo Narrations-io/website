@@ -55,6 +55,23 @@ export type DashboardFrameProps = {
   /** Extra classes on the outer card — set height, width here */
   className?: string;
 
+  /**
+   * Render the DESKTOP composition at every viewport (sidebar shown, KPIs 4-up,
+   * search shown) instead of collapsing on small screens.
+   *
+   * For callers that render the frame at a fixed desktop width and scale it
+   * down as a picture. Tailwind's `sm:`/`md:` are VIEWPORT media queries, so
+   * inside a 1040px box on a 390px phone the frame would otherwise still
+   * collapse — you'd get a scaled-down *mobile* layout, which is the worst of
+   * both. See DashboardSection.tsx.
+   *
+   * Opt-in and off by default: the homepage cockpit (ProductShowcaseSection)
+   * and the hero card (newhome/DashboardCard) rely on the collapsing behaviour.
+   * At `lg` and up this changes nothing — the responsive classes already
+   * resolve to these values.
+   */
+  staticComposition?: boolean;
+
   // ── Sidebar ────────────────────────────────────────────────────────────
   sidebarWidth?: string;
   /** Show "Narrations" text label next to the N-badge */
@@ -88,6 +105,7 @@ export type DashboardFrameProps = {
 
 export default function DashboardFrame({
   className = "",
+  staticComposition = false,
   sidebarWidth = "w-[150px]",
   showSidebarLabel = false,
   menuItems,
@@ -109,7 +127,9 @@ export default function DashboardFrame({
     >
       {/* ── Sidebar ── */}
       <aside
-        className={`hidden shrink-0 flex-col border-r border-line bg-sunken px-2.5 py-3 md:flex ${sidebarWidth}`}
+        className={`shrink-0 flex-col border-r border-line bg-sunken px-2.5 py-3 ${
+          staticComposition ? "flex" : "hidden md:flex"
+        } ${sidebarWidth}`}
       >
         {/* N-badge */}
         <div className="flex items-center gap-1.5 px-1">
@@ -217,7 +237,11 @@ export default function DashboardFrame({
             Narrations /{" "}
             <span className="text-ink-700">{breadcrumb}</span>
           </p>
-          <div className="hidden h-[28px] w-[200px] items-center gap-2 rounded-[8px] bg-sunken px-2.5 sm:flex">
+          <div
+            className={`h-[28px] w-[200px] items-center gap-2 rounded-[8px] bg-sunken px-2.5 ${
+              staticComposition ? "flex" : "hidden sm:flex"
+            }`}
+          >
             <Search size={11} className="text-ink-300" />
             <span className="text-[11px] text-ink-300">
               Search workflows, drafts…
@@ -235,7 +259,11 @@ export default function DashboardFrame({
 
         {/* KPI strip — 2 cols on mobile, 4 cols sm+ */}
         {kpis && kpis.length > 0 && (
-          <div className="mt-4 grid grid-cols-2 divide-x divide-white/10 overflow-hidden rounded-[12px] bg-green-900 sm:grid-cols-4">
+          <div
+            className={`mt-4 grid divide-x divide-white/10 overflow-hidden rounded-[12px] bg-green-900 ${
+              staticComposition ? "grid-cols-4" : "grid-cols-2 sm:grid-cols-4"
+            }`}
+          >
             {kpis.map((kpi) => (
               <div key={kpi.label} className="px-3.5 py-3">
                 <div className="flex items-center justify-between">

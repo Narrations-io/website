@@ -29,17 +29,31 @@ export default async function BlogPostPage({ params }: Props) {
       <article className="mx-auto max-w-[1200px] px-6 py-12 md:py-16">
         <nav
           aria-label="Breadcrumb"
-          className="mb-10 flex items-center gap-2 text-sm text-ink-500"
+          className="mb-10 flex min-w-0 items-center gap-2 text-sm text-ink-500"
         >
-          <Link href="/" className="transition hover:text-ink-900">
+          <Link href="/" className="shrink-0 transition hover:text-ink-900">
             Home
           </Link>
-          <span aria-hidden>/</span>
-          <Link href="/resources/blog" className="transition hover:text-ink-900">
+          <span aria-hidden className="shrink-0">
+            /
+          </span>
+          <Link
+            href="/resources/blog"
+            className="shrink-0 transition hover:text-ink-900"
+          >
             Blog
           </Link>
-          <span aria-hidden>/</span>
-          <span className="font-medium text-ink-900">{post.title}</span>
+          <span aria-hidden className="shrink-0">
+            /
+          </span>
+          {/* At 390px the full post title was squeezed to min-content on the
+              same flex line and wrapped into a ragged multi-line block, buckling
+              the crumb rail. Truncate it to one line with an ellipsis on phones
+              (full title kept for screen readers); reverts to the untruncated
+              desktop rendering at sm and up. */}
+          <span className="min-w-0 truncate font-medium text-ink-900 sm:overflow-visible sm:whitespace-normal">
+            {post.title}
+          </span>
         </nav>
 
         <div className="mx-auto max-w-2xl">

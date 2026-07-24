@@ -3,6 +3,25 @@
 @tailwind utilities;
 
 :root {
+  /* Opt out of automatic browser darkening. Chrome on Android's Auto Dark Theme
+     ("Darken websites") force-darkens any page that doesn't declare a colour
+     scheme, and it classifies and INVERTS images as part of that pass — so the
+     `.logo-white` tiles below, which are already invert(1) to force them white,
+     get inverted a second time and come back BLACK. That is the "dark logos on
+     mobile at night" report. Samsung Internet's dark mode uses the same opt-out.
+
+     The `only` keyword is load-bearing: plain `color-scheme: light` does NOT
+     opt out of Auto Dark Theme — only `only light` does.
+
+     This is accurate for this site: it is a light-scheme page that contains
+     deliberately dark BANDS (footer, /contact, the dbg/dpanel family), which is
+     not the same as supporting a dark colour SCHEME. Nothing here reacts to
+     prefers-color-scheme, so there is nothing to preserve.
+
+     Note this does NOT stop iOS Smart Invert — that is an OS-level accessibility
+     filter applied outside CSS, with no web opt-out. */
+  color-scheme: only light;
+
   --bg: #FAFAF8;
   --fg: #10130f;
 
@@ -104,6 +123,28 @@ body {
     from { opacity: 0; transform: translateY(52px) scale(0.985); }
     to { opacity: 1; transform: none; }
   }
+  /* The hero fold's height. Single source of truth for the `73` — Hero.tsx reads
+     it back as var(--fold-h) (for LOGO_TOP), so the two can't drift.
+
+     Mobile keeps a plain 100svh: its hill is bottom-0 anchored, so it always
+     reaches the fold and there is no gap to close.
+
+     The desktop hill is top-anchored off --u, and below a 1.34 viewport aspect
+     its bottom collapses to a pure function of viewport WIDTH (0.7462W) while a
+     100svh fold is a pure function of HEIGHT — so the fold has to end where the
+     hill ends. 74.62u is that exact bottom; 73u backs it off ~1.5u so the hill
+     always overhangs and rounding can't flash a sky line. Above 1.34 the 100svh
+     term wins and nothing changes. Full derivation in Hero.tsx. */
+  .hero-fold {
+    --fold-h: 100svh;
+    min-height: var(--fold-h);
+  }
+  @media (min-width: 768px) {
+    .hero-fold {
+      --fold-h: min(100svh, calc(73 * var(--u)));
+    }
+  }
+
   /* Whiten a colored logo tile to the white-on-grass treatment. Kept as a real
      CSS rule (not an arbitrary `[filter:...]` utility) so the production
      Tailwind build can never purge it — a dropped filter is what makes the
@@ -395,7 +436,15 @@ body {
 @keyframes dash-pop   { 0% { transform: scale(1); } 30% { transform: scale(1.18); } 100% { transform: scale(1); } }
 @keyframes dash-caret { 50% { opacity: 0; } }
 .dash-rowin { animation: dash-rowin 0.42s cubic-bezier(0.33, 1, 0.68, 1) both; }
-.dash-pop   { display: inline-block; animation: dash-pop 0.5s ease both; }
+/* Animation only — deliberately does NOT set `display`. It used to force
+   `display: inline-block`, and because this rule sits after @tailwind utilities
+   it beat Tailwind's `.flex` on the one element that uses it (the done-state
+   check in DashboardSection). That silently made `items-center justify-center`
+   inert, so the check was laid out as an inline element on the text baseline
+   instead of being centred in its green circle. Transforms apply to flex boxes
+   fine, so the inline-block bought nothing. Any future user must bring its own
+   display class. */
+.dash-pop   { animation: dash-pop 0.5s ease both; }
 .dash-caret { animation: dash-caret 1s step-end infinite; }
 /* Right-rail automation ring: fills once from empty (--ring-c) to its resting
    offset. Reduced motion shows the final state with no animation. */
@@ -403,5 +452,16 @@ body {
 .ring-fill { animation: ring-fill 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
 @media (prefers-reduced-motion: reduce) {
   .dash-rowin, .dash-pop, .dash-caret, .ring-fill { animation: none; }
+}
+
+/* MobileNavDrawer — shared hamburger drawer used by SiteNav + homepage Hero */
+@keyframes navFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes navSlideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 

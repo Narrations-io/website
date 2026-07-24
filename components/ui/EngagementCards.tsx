@@ -17,9 +17,9 @@ export const ENGAGEMENT_MODES = [
   },
   {
     n: "03",
-    title: "Done-with-you",
-    text: "Operators embed in your team to set up workflows, review outputs and run the high-stakes work, campaigns to investor materials.",
-    short: "Operators embed and run it with you.",
+    title: "Forward-deployed operators",
+    text: "Our experts embed inside your team and environment, set up each vertical, and run it with you, then train your team to run it alone.",
+    short: "Experts embed, run it with you, then hand it over.",
     href: undefined as string | undefined,
   },
 ];

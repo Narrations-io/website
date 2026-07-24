@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteNav from "@/components/SiteNav";
 import NewsletterSection from "@/components/resources/NewsletterSection";
+import ResourcesIndustryRail from "@/components/resources/ResourcesIndustryRail";
 
 export const metadata: Metadata = {
   title: "Resources, Narrations",
@@ -70,7 +71,7 @@ const FAQ = [
   },
   {
     q: "Is Narrations a software company or a services company?",
-    a: "Narrations is platform-first and services-backed. The platform is the software. Through the done-with-you model, expert operators embed with teams that want hands-on setup, review or execution, working as part of your team rather than as a detached vendor.",
+    a: "Narrations is platform-first and services-backed. The platform is the software. Through forward-deployed operators (FDO-led), our experts embed inside your team and environment, set up each vertical, and run it with you, then train your team to run it alone.",
   },
   {
     q: "Can I buy a single product, or only the full platform?",
@@ -78,7 +79,7 @@ const FAQ = [
   },
   {
     q: "How does pricing work?",
-    a: "Pricing follows the three engagement models and is quoted per client after scoping. The platform is a monthly subscription, Enterprise AI is scoped to what needs to be built and run, and done-with-you is priced per embedded person plus platform fees.",
+    a: "Pricing follows the three engagement models and is quoted per client after scoping. The platform is a monthly subscription, Enterprise AI is scoped to what needs to be built and run, and forward-deployed operators are priced per embedded person plus platform fees.",
   },
   {
     q: "How is this different from a marketing agency or a generic AI tool?",
@@ -119,17 +120,8 @@ export default function ResourcesPage() {
             </p>
           </div>
 
-          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {INDUSTRIES.map(({ name, line }) => (
-              <li
-                key={name}
-                className="rounded-[20px] border border-line bg-paper p-6 shadow-card"
-              >
-                <h3 className="text-[15px] font-semibold text-ink-900">{name}</h3>
-                <p className="mt-2 text-sm leading-6 text-ink-700">{line}</p>
-              </li>
-            ))}
-          </ul>
+          {/* Grid at `sm`+, snap rail on phones — see ResourcesIndustryRail. */}
+          <ResourcesIndustryRail industries={INDUSTRIES} />
         </div>
 
         {/* Newsletter */}
@@ -151,7 +143,9 @@ export default function ResourcesPage() {
             {FAQ.map(({ q, a }) => (
               <div key={q} className="py-6">
                 <dt className="text-[15px] font-semibold text-ink-900">{q}</dt>
-                <dd className="mt-2 text-sm leading-7 text-ink-700">{a}</dd>
+                {/* Answers were 14px at every viewport — the densest reading on
+                    the site. Raised to the 16px Body scale, leading unchanged. */}
+                <dd className="mt-2 text-base leading-7 text-ink-700">{a}</dd>
               </div>
             ))}
           </dl>

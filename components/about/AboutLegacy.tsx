@@ -73,7 +73,7 @@ export default function AboutLegacy() {
                 <img
                   src={src}
                   alt={alt}
-                  className={`${sizeCls ?? "h-[22px] md:h-[28px]"} logo-white w-auto shrink-0 opacity-90`}
+                  className={`${sizeCls ?? "h-[22px] md:h-[28px]"} logo-white w-auto shrink-0`}
                 />
               </li>
             ))}

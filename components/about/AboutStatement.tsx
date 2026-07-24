@@ -28,11 +28,15 @@ export default function AboutStatement() {
   return (
     <section className="overflow-hidden bg-sunken py-20 md:py-24">
       {/* Giant outlined watermark (N = Interlock mark + "arrations"), light-theme
-          counterpart of the dark watermark on /brand. */}
+          counterpart of the dark watermark on /brand.
+          Phone step-down: the old clamp floor of 96px made the lockup ~500px wide inside
+          the ~358px box at 390px, so it was sliced at BOTH edges and read as a fragment.
+          Below sm the floor drops (16vw ≈ 62px at 390px → lockup ≈ 4.49em ≈ 280px inside
+          the 358px padded box) so the whole word reads. From sm up the original clamp is
+          unchanged — desktop is identical. */}
       <div
         aria-hidden
-        className="pointer-events-none mb-14 flex w-full select-none items-center justify-center overflow-hidden whitespace-nowrap px-4 md:mb-20"
-        style={{ fontSize: "clamp(96px, 14vw, 220px)" }}
+        className="pointer-events-none mb-14 flex w-full select-none items-center justify-center overflow-hidden whitespace-nowrap px-4 text-[clamp(44px,16vw,96px)] sm:text-[clamp(96px,14vw,220px)] md:mb-20"
       >
         <svg
           viewBox="26 26 68 68"

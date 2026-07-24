@@ -1,5 +1,6 @@
 import Link from "next/link";
 import NarrationsLogo from "@/components/NarrationsLogo";
+import MobileNavDrawer from "@/components/MobileNavDrawer";
 
 const NAV: { label: string; href: string }[] = [
   { label: "Products", href: "/products" },
@@ -42,16 +43,17 @@ export default function SiteNav({ theme = "dark" }: SiteNavProps) {
         <div className="flex items-center gap-3">
           <Link
             href="/contact"
-            className={`hidden text-sm font-medium transition sm:block ${dark ? "text-white/80 hover:text-white" : "text-ink-700 hover:text-ink-900"}`}
+            className={`hidden text-sm font-medium transition sm:block md:block ${dark ? "text-white/80 hover:text-white" : "text-ink-700 hover:text-ink-900"}`}
           >
             Contact
           </Link>
           <Link
             href="/#book-a-demo"
-            className={`rounded-full px-5 py-2 text-sm font-medium transition ${dark ? "border border-white/15 bg-white/[0.05] text-white hover:bg-white/[0.1]" : "border border-line bg-paper text-ink-900 hover:bg-sunken"}`}
+            className={`hidden rounded-full px-5 py-2 text-sm font-medium transition sm:inline-flex ${dark ? "border border-white/15 bg-white/[0.05] text-white hover:bg-white/[0.1]" : "border border-line bg-paper text-ink-900 hover:bg-sunken"}`}
           >
             Get started
           </Link>
+          <MobileNavDrawer theme={theme} links={NAV} />
         </div>
       </nav>
     </header>

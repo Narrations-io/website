@@ -38,7 +38,7 @@ const SECTIONS = [
   {
     heading: "4. The Services",
     body: [
-      `Narrations is an artificial intelligence company for the digital economy. It provides, among other things: the Narrations software platform; private and enterprise artificial intelligence systems; and operator-supported and done-with-you workflows across content, social, community, investor materials, market intelligence, distribution, analytics, and diligence functions.`,
+      `Narrations is an artificial intelligence company for the digital economy. It provides, among other things: the Narrations software platform; private and enterprise artificial intelligence systems; and operator-supported and forward-deployed operator (FDO-led) workflows across content, social, community, investor materials, market intelligence, distribution, analytics, and diligence functions.`,
       `Descriptions of the Services, products, features, and outcomes presented on the website are provided for general informational purposes only. They do not constitute an offer, a warranty, or a binding commitment. The specific scope, deliverables, fees, and terms of any engagement will be set out in a separate written agreement, statement of work, order form, or quotation agreed between you and Narrations. In the event of any conflict between such a separate agreement and these Terms, the separate agreement prevails in respect of that engagement.`,
       `We reserve the right to modify, suspend, withdraw, or discontinue any part of the Services, including any product, feature, or module, at any time and without liability to you.`,
     ],

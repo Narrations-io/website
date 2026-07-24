@@ -269,7 +269,7 @@ export default function BookingCard({
     return (
       <div
         aria-hidden
-        className="rounded-[28px] border border-green-500/20 bg-dpanel p-7 shadow-glow-brand md:p-9"
+        className="rounded-[28px] border border-green-500/20 bg-dpanel p-5 shadow-glow-brand sm:p-7 md:p-9"
       >
         <div className="grid min-h-[296px] gap-6 sm:grid-cols-[1.4fr_1fr]">
           <div className="rounded-2xl border border-white/10 bg-white/[0.02]" />
@@ -282,15 +282,19 @@ export default function BookingCard({
 
   return (
     <>
-      <div className="rounded-[28px] border border-green-500/20 bg-dpanel p-7 shadow-glow-brand md:p-9">
+      {/* Phone padding is reclaimed twice over (card p-7 -> p-5, calendar p-4 ->
+          p-2.5): at 390px the nested padding left only ~254px of content box for
+          a 7-column month grid, so 44px day cells overflowed their columns and
+          overlapped. Unchanged from sm: up, where there was already room. */}
+      <div className="rounded-[28px] border border-green-500/20 bg-dpanel p-5 shadow-glow-brand sm:p-7 md:p-9">
         <div className="grid gap-6 sm:grid-cols-[1.4fr_1fr]">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-2.5 sm:p-4">
             <div className="flex items-center justify-between px-1">
               <button
                 type="button"
                 aria-label="Previous month"
                 onClick={prevMonth}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-white/40 transition hover:bg-white/[0.06] hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-white/40 transition hover:bg-white/[0.06] hover:text-white sm:h-7 sm:w-7"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -299,7 +303,7 @@ export default function BookingCard({
                 type="button"
                 aria-label="Next month"
                 onClick={nextMonth}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-white/40 transition hover:bg-white/[0.06] hover:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-white/40 transition hover:bg-white/[0.06] hover:text-white sm:h-7 sm:w-7"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -329,12 +333,16 @@ export default function BookingCard({
                       setSelectedSlotIdx(0);
                     }}
                     aria-pressed={selected}
+                    // w-full + max-w-[44px] lets the cell shrink with its
+                    // minmax(0,1fr) column instead of overflowing it: a fixed
+                    // 44px needs 308px of grid but only ~278px exists at 390px
+                    // (~248px at 360px). Tap target stays 40px tall.
                     className={
                       selected
-                        ? "mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-green-500 font-semibold text-white"
+                        ? "mx-auto flex h-10 w-full max-w-[44px] items-center justify-center rounded-lg bg-green-500 font-semibold text-white sm:h-8 sm:w-8"
                         : available
-                          ? "mx-auto flex h-8 w-8 items-center justify-center rounded-lg text-white/75 transition hover:bg-white/[0.08]"
-                          : "mx-auto flex h-8 w-8 items-center justify-center rounded-lg text-white/20"
+                          ? "mx-auto flex h-10 w-full max-w-[44px] items-center justify-center rounded-lg text-white/75 transition hover:bg-white/[0.08] sm:h-8 sm:w-8"
+                          : "mx-auto flex h-10 w-full max-w-[44px] items-center justify-center rounded-lg text-white/20 sm:h-8 sm:w-8"
                     }
                   >
                     {day}

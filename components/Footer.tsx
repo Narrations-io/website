@@ -58,9 +58,24 @@ export default function Footer() {
             >
               <NarrationsLogo height={26} tone="dark" />
             </Link>
-            <p className="mt-4 max-w-[220px] text-sm leading-6 text-white/50">
+            {/* One line: the max-w-[220px] that forced a two-line wrap is gone. */}
+            <p className="mt-4 text-sm leading-6 text-white/50">
               AI systems for growth in the digital economy.
             </p>
+            {/* Social logos moved up here, directly below the tagline (were at
+                the very bottom of the footer). */}
+            <div className="mt-5 flex items-center gap-3">
+              {SOCIALS.map(({ label, href, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/60 transition hover:border-white/30 hover:text-white"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
           </div>
 
           {/* Navigation columns */}
@@ -105,31 +120,20 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom row */}
-        <div className="mt-12 flex flex-col gap-6 border-t border-white/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-4 text-sm text-white/45 sm:flex-row sm:items-center sm:gap-6">
-            <span>© Narrations 2026. All rights reserved.</span>
-            <div className="flex items-center gap-6">
-              <Link href="/privacy" className="transition hover:text-white">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="transition hover:text-white">
-                Terms of Service
-              </Link>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {SOCIALS.map(({ label, href, icon: Icon }) => (
-              <a
-                key={label}
-                href={href}
-                aria-label={label}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/60 transition hover:border-white/30 hover:text-white"
-              >
-                <Icon className="h-4 w-4" />
-              </a>
-            ))}
+        {/* Bottom row — legal only (socials moved up to the brand block).
+            Very small type per request: copyright, Privacy and Terms are all
+            text-[11px]. Copyright is nowrap so it stays one line. */}
+        <div className="mt-7 flex flex-col gap-3 border-t border-white/10 pt-5 text-[11px] text-white/40 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+          <span className="whitespace-nowrap">
+            © Narrations 2026. All rights reserved.
+          </span>
+          <div className="flex items-center gap-6">
+            <Link href="/privacy" className="transition hover:text-white">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="transition hover:text-white">
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>

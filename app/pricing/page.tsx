@@ -20,7 +20,7 @@ export default function PricingPage() {
       <ContactSection
         eyebrow="Pricing"
         title="Pricing is scoped to your engagement."
-        subtitle="Narrations pricing is consultative: we scope your needs and quote per engagement across the platform (SaaS), Enterprise AI and done-with-you. There are no published tiers. Tell us what you're building and we'll send pricing."
+        subtitle="Narrations pricing is consultative: we scope your needs and quote per engagement across the platform (SaaS), Enterprise AI and forward-deployed operators. There are no published tiers. Tell us what you're building and we'll send pricing."
       />
     </main>
   );
