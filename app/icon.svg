@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <clipPath id="ic-clipL"><polygon points="26,26 70,26 70,40 40,40 40,94 26,94"/></clipPath>
+    <clipPath id="ic-clipR"><polygon points="94,94 50,94 50,80 80,80 80,26 94,26"/></clipPath>
+  </defs>
+  <polygon points="26,26 70,26 70,40 40,40 40,94 26,94" fill="#1F6B4C"/>
+  <polygon points="94,94 50,94 50,80 80,80 80,26 94,26" fill="#1F6B4C"/>
+  <polygon points="26,26 70,26 70,40 40,40" fill="#0E1311"/>
+  <polygon points="50,80 80,80 94,94 50,94" fill="#0E1311"/>
+  <rect x="23" y="31" width="20" height="4" fill="#FAFAF8" transform="rotate(45 33 33)" clip-path="url(#ic-clipL)"/>
+  <rect x="77" y="85" width="20" height="4" fill="#FAFAF8" transform="rotate(45 87 87)" clip-path="url(#ic-clipR)"/>
+  <line x1="44" y1="44" x2="76" y2="76" stroke="#1F6B4C" stroke-width="4"/>
+</svg>
